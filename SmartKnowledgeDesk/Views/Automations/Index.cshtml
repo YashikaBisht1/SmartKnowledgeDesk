@@ -1,0 +1,267 @@
+@using SmartKnowledgeDesk.Plugins
+@model SmartKnowledgeDesk.Models.AutomationSettings
+
+@{
+    ViewData["Title"] = "Automations";
+    var plugins = ViewBag.Plugins as IEnumerable<ITicketAutomationPlugin> ?? Enumerable.Empty<ITicketAutomationPlugin>();
+    var eventStats = ViewBag.EventStats as Dictionary<string, int> ?? new Dictionary<string, int>();
+    var recentEvents = ViewBag.RecentEvents as List<SmartKnowledgeDesk.Models.AutomationEvent> ?? new List<SmartKnowledgeDesk.Models.AutomationEvent>();
+    var codexAutomations = ViewBag.CodexAutomations as List<SmartKnowledgeDesk.Models.CodexAutomationInfo> ?? new List<SmartKnowledgeDesk.Models.CodexAutomationInfo>();
+    var runResults = ViewBag.AutomationRunResults as List<SmartKnowledgeDesk.Models.AutomationRunResult> ?? new List<SmartKnowledgeDesk.Models.AutomationRunResult>();
+    var latestEmailResult = ViewBag.LatestEmailIngestionResult as SmartKnowledgeDesk.Models.AutomationRunResult;
+    var eventDataUnavailable = ViewBag.EventDataUnavailable as bool? ?? false;
+}
+
+<h1>Automations</h1>
+
+<!-- Primary Mail Ticket Automation -->
+<div class="card border-primary mb-4">
+    <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between">
+        <strong>Read Gmail and Create Tickets</strong>
+        <span class="badge bg-light text-primary">Main mail automation</span>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <p class="mb-1"><strong>In-app job:</strong> <span class="badge bg-@(Model.EmailIngestion.Enabled ? "success" : "danger")">@(Model.EmailIngestion.Enabled ? "Enabled" : "Disabled")</span></p>
+                <p class="mb-1"><strong>Runs:</strong> immediately on app start, then every @Model.EmailIngestion.IntervalMinutes minutes</p>
+                <p class="mb-0"><strong>Reads:</strong> latest @Model.EmailIngestion.MaxEmailsPerRun emails per run</p>
+            </div>
+            <div class="col-md-4">
+                <p class="mb-1"><strong>Codex job:</strong> <span class="badge bg-success">Active</span></p>
+                <p class="mb-1"><strong>Name:</strong> Check Mail And Create Tickets</p>
+                <p class="mb-0"><strong>Schedule:</strong> every hour</p>
+            </div>
+            <div class="col-md-4">
+                @if (latestEmailResult != null)
+                {
+                    <p class="mb-1"><strong>Latest run:</strong> @latestEmailResult.CreatedAt.ToString("MMM dd, HH:mm:ss")</p>
+                    <p class="mb-1"><strong>Status:</strong> <span class="badge bg-@(latestEmailResult.Status == "Success" ? "success" : "danger")">@latestEmailResult.Status</span></p>
+                    <p class="mb-0"><small>@latestEmailResult.Summary</small></p>
+                }
+                else
+                {
+                    <p class="mb-0 text-muted">No mail automation run has been recorded yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Configuration Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Read Gmail and create tickets</h2>
+                <p class="mb-1"><strong>Status:</strong> <span class="badge bg-@(Model.EmailIngestion.Enabled ? "success" : "danger")">@(Model.EmailIngestion.Enabled ? "Enabled" : "Disabled")</span></p>
+                <p class="mb-1"><strong>Interval:</strong> @Model.EmailIngestion.IntervalMinutes minutes</p>
+                <p class="mb-0"><strong>Max emails:</strong> @Model.EmailIngestion.MaxEmailsPerRun per run</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">AI triage</h2>
+                <p class="mb-1"><strong>Status:</strong> <span class="badge bg-@(Model.TicketTriage.Enabled ? "success" : "danger")">@(Model.TicketTriage.Enabled ? "Enabled" : "Disabled")</span></p>
+                <p class="mb-1"><strong>Interval:</strong> @Model.TicketTriage.IntervalMinutes minutes</p>
+                <p class="mb-0"><strong>Batch size:</strong> @Model.TicketTriage.BatchSize tickets</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Stale escalation</h2>
+                <p class="mb-1"><strong>Status:</strong> <span class="badge bg-@(Model.StaleTicketEscalation.Enabled ? "success" : "danger")">@(Model.StaleTicketEscalation.Enabled ? "Enabled" : "Disabled")</span></p>
+                <p class="mb-1"><strong>Interval:</strong> @Model.StaleTicketEscalation.IntervalMinutes minutes</p>
+                <p class="mb-0"><strong>Escalates after:</strong> @Model.StaleTicketEscalation.StaleAfterHours hours</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Automation Metrics -->
+<h2 class="h4">Automation Metrics</h2>
+@if (eventDataUnavailable)
+{
+    <div class="alert alert-warning">
+        Automation event data is temporarily unavailable. Codex automations and configured schedules are still shown below.
+    </div>
+}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="card-title">@eventStats.GetValueOrDefault("Total Events", 0)</h3>
+                <p class="card-text text-muted">Total Events</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="card-title">@eventStats.GetValueOrDefault("Today", 0)</h3>
+                <p class="card-text text-muted">Today</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="card-title">@eventStats.GetValueOrDefault("Email Imported", 0)</h3>
+                <p class="card-text text-muted">Emails Imported</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="card-title">@eventStats.GetValueOrDefault("Triaged", 0)</h3>
+                <p class="card-text text-muted">Triaged</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recorded Run Results -->
+<h2 class="h4">Recorded Run Results</h2>
+@if (runResults.Any())
+{
+    <div class="table-responsive mb-4">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Automation</th>
+                    <th>Status</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var result in runResults)
+                {
+                    <tr>
+                        <td>
+                            <small class="text-muted">@result.CreatedAt.ToString("HH:mm:ss")</small><br />
+                            <small class="text-muted">@result.CreatedAt.ToString("MMM dd")</small>
+                        </td>
+                        <td>@result.AutomationName</td>
+                        <td>
+                            <span class="badge bg-@(result.Status == "Success" ? "success" : "danger")">@result.Status</span>
+                        </td>
+                        <td><small>@result.Summary</small></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        No recorded automation runs yet. Start the app to trigger the first scheduled run.
+    </div>
+}
+
+<!-- Codex Automations -->
+<div class="d-flex align-items-center justify-content-between mt-4">
+    <h2 class="h4 mb-0">Codex Automations</h2>
+    <span class="badge bg-primary">@codexAutomations.Count Active</span>
+</div>
+
+<div class="table-responsive mb-4 mt-2">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Schedule</th>
+                <th>Purpose</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var automation in codexAutomations)
+            {
+                <tr>
+                    <td>
+                        <strong>@automation.Name</strong><br />
+                        <small class="text-muted">@automation.AutomationId</small>
+                    </td>
+                    <td>@automation.Schedule</td>
+                    <td>@automation.Purpose</td>
+                    <td><span class="badge bg-success">@automation.Status</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Plugins -->
+<h2 class="h4">Plugins</h2>
+<table class="table table-striped mb-4">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var plugin in plugins)
+        {
+            <tr>
+                <td>@plugin.Name</td>
+                <td>@plugin.Description</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Recent Automation Events -->
+<h2 class="h4">Recent Automation Events</h2>
+@if (recentEvents.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Event Type</th>
+                    <th>Automation</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var evt in recentEvents)
+                {
+                    <tr>
+                        <td>
+                            <small class="text-muted">@evt.CreatedAt.ToString("HH:mm:ss")</small><br/>
+                            <small class="text-muted">@evt.CreatedAt.ToString("MMM dd")</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">@evt.EventType</span>
+                        </td>
+                        <td>
+                            <small>@evt.AutomationName</small>
+                        </td>
+                        <td>
+                            <small>@evt.Description</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-@(evt.Status == "Success" ? "success" : "warning")">@evt.Status</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        No automation events yet. Events will appear here once automations run.
+    </div>
+}

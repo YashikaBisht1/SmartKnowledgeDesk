@@ -1,0 +1,32 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+bin/
+obj/
+
+# Rider
+.idea/
+*.sln.iml
+
+# ASP.NET
+App_Data/
+appsettings.json
+appsettings.*.json
+
+# Visual Studio Code
+.vscode/
+
+# Logs
+*.log
+
+# Node/npm
+node_modules/
+
+# OS files
+Thumbs.db
+*.DS_Store

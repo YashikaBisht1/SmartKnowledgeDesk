@@ -1,0 +1,99 @@
+@model SmartKnowledgeDesk.Models.Ticket
+
+@{
+    ViewData["Title"] = "Ticket Details";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div>
+    <h4>Ticket</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Title)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Title)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Category)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Category)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Priority)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Priority)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.CreatedBy)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.CreatedBy)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.CreatedDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.CreatedDate)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AssignedTeam)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AssignedTeam)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.SuggestedSolution)
+        </dt>
+        <dd class="col-sm-10">
+            @if (!string.IsNullOrWhiteSpace(Model.SuggestedSolution))
+            {
+                <div class="alert alert-success">
+                    <strong>AI Recommendation:</strong><br/>
+                    @Html.DisplayFor(model => model.SuggestedSolution)
+                </div>
+            }
+            else
+            {
+                <span class="text-muted">No suggestion yet</span>
+            }
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.NextAction)
+        </dt>
+        <dd class="col-sm-10">
+            @if (!string.IsNullOrWhiteSpace(Model.NextAction))
+            {
+                <div class="alert alert-info">
+                    <strong>Next Action:</strong><br/>
+                    @Html.DisplayFor(model => model.NextAction)
+                </div>
+            }
+            else
+            {
+                <span class="text-muted">No action assigned yet</span>
+            }
+        </dd>
+    </dl>
+</div>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

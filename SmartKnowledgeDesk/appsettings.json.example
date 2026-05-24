@@ -1,0 +1,38 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=.;Database=SmartKnowledgeDB;Trusted_Connection=True;TrustServerCertificate=True;"
+  },
+  "Groq": {
+    "ApiKey": "YOUR_GROQ_API_KEY"
+  },
+  "Gmail": {
+    "Email": "your-email@gmail.com",
+    "Password": "YOUR_APP_PASSWORD"
+  },
+  "Automation": {
+    "EmailIngestion": {
+      "Enabled": true,
+      "IntervalMinutes": 15,
+      "MaxEmailsPerRun": 5,
+      "AgentName": "enterprise support AI agent"
+    },
+    "TicketTriage": {
+      "Enabled": true,
+      "IntervalMinutes": 30,
+      "BatchSize": 10,
+      "AgentName": "enterprise support AI agent"
+    },
+    "StaleTicketEscalation": {
+      "Enabled": true,
+      "IntervalMinutes": 60,
+      "StaleAfterHours": 24
+    }
+  }
+}

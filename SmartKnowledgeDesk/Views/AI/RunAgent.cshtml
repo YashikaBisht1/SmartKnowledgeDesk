@@ -1,0 +1,21 @@
+@model SmartKnowledgeDesk.Models.AgentResponse
+
+<h2>AI Ticket Agent</h2>
+
+<h3>@ViewBag.Title</h3>
+
+<div style="padding:20px;border:1px solid gray;border-radius:10px;">
+
+    <h4>Category</h4>
+    <p>@Model.Category</p>
+
+    <h4>Priority</h4>
+    <p>@Model.Priority</p>
+
+    <h4>Suggested Solution</h4>
+    <p>@Model.SuggestedSolution</p>
+
+    <h4>Next Action</h4>
+    <p>@Model.NextAction</p>
+
+</div>
