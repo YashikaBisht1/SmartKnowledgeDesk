@@ -32,6 +32,19 @@ SmartKnowledgeDesk is an automated ASP.NET Core ticket-triage and customer suppo
 
 ---
 
+## 📷 Screenshots & Interface Preview
+
+Here is a preview of the active automations and task schedules:
+
+| 1. Automation Ingestion & Triage summary | 2. Scheduled Active Automations list |
+|:---:|:---:|
+| ![Dashboard Cards](images/dashboard_cards.png) | ![Automations List](images/automations_list.png) |
+
+### 3. Detailed View: Check Mail And Create Tickets
+![Task Details](images/task_details.png)
+
+---
+
 ## 🛠️ Configuration (`appsettings.json`)
 
 Configure the application in `SmartKnowledgeDesk/appsettings.json`. A template is provided in `appsettings.json.example`.
