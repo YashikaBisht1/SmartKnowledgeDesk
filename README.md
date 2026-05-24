@@ -1,64 +1,106 @@
-# SmartKnowledgeDesk
+# SmartKnowledgeDesk 🧠⚡
 
-SmartKnowledgeDesk is a local ASP.NET Core ticketing automation platform that reads incoming Gmail messages, creates support tickets, applies AI-powered triage, logs automation events, and escalates stale issues.
+SmartKnowledgeDesk is an automated ASP.NET Core ticket-triage and customer support platform. It integrates with Gmail and Groq AI (Llama/AI models) to ingest incoming emails, auto-triage them, suggest solutions, log automation runs, and escalate stale tickets.
 
-## Project Journey
+---
 
-This repository was built from an interactive development session with the following workflow:
+## 🚀 Key Features
 
-1. **Initial analysis**
-   - Reviewed the application structure and identified automation-related files.
-   - Confirmed there were three background services: email ingestion, AI ticket triage, and stale ticket escalation.
-   - Discovered the UI only displayed automation settings, not execution history or AI recommendations.
+* **📧 Automated Email Ingestion (`EmailTicketIngestionService`):**
+  * Periodically polls a Gmail inbox using IMAP.
+  * Leverages Groq AI to analyze email body content.
+  * Dynamically extracts `Category`, `Priority`, `SuggestedSolution`, and `NextAction` to create new structured support tickets.
+  * Prevents duplicate ingestion of previously processed emails.
 
-2. **Feature enhancement**
-   - Added persistent storage for AI results: `SuggestedSolution`, `NextAction`, and `AssignedTeam` on `Ticket`.
-   - Added `AutomationEvent` logging for each automation action.
-   - Implemented `IAutomationRunRecorder` and `FileAutomationRunRecorder` to record automation run summaries in `App_Data/automation-results.jsonl`.
-   - Updated the automations dashboard to show metrics, recent run history, and event feed.
-   - Extended ticket details to display AI-recommended solutions and next actions.
+* **🤖 AI-Powered Ticket Triage (`TicketTriageAutomationService`):**
+  * Scans for uncategorized tickets in the backlog.
+  * Triage-assigns categories, priorities, suggested solutions, and next actions.
 
-3. **Bug and deployment preparation**
-   - Validated the API route in `TicketApiController` and ensured `create-from-email` is explicit.
-   - Confirmed the app is configured to start correctly and identified port conflicts with launch settings.
-   - Laid the groundwork for future deployment by creating a Git repository for GitHub/Vercel connection.
+* **⏰ Stale Ticket Escalation (`StaleTicketEscalationService`):**
+  * Automatically flags open, unresolved tickets that have been inactive for more than a configured timeframe (e.g., 24 hours).
+  * Automatically escalates tickets and registers escalation events.
 
-## Local run
+* **🔌 Extensible Plugin System:**
+  * Uses a robust lifecycle event plugin model (`ITicketAutomationPlugin`).
+  * **`AuditLogTicketPlugin`**: Records security and lifecycle audit events.
+  * **`HighPriorityRoutingPlugin`**: Auto-assigns teams (e.g., "tier-3-support") and routes high-priority tickets.
 
-To run the project locally:
+* **📊 Live Automations Dashboard:**
+  * View real-time status of active services.
+  * Inspect execution counts, success/failure metrics, and recent activity logs.
+  * Read full execution summary feeds directly from [automation-results.jsonl](file:///c:/Users/bisht/knowledge_base/SmartKnowledgeDesk/App_Data/automation-results.jsonl).
 
+---
+
+## 🛠️ Configuration (`appsettings.json`)
+
+Configure the application in `SmartKnowledgeDesk/appsettings.json`. A template is provided in `appsettings.json.example`.
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=.;Database=SmartKnowledgeDB;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True;"
+  },
+  "Groq": {
+    "ApiKey": "YOUR_GROQ_API_KEY"
+  },
+  "Gmail": {
+    "Email": "your-email@gmail.com",
+    "Password": "YOUR_GMAIL_APP_PASSWORD"
+  },
+  "Automation": {
+    "EmailIngestion": {
+      "Enabled": true,
+      "IntervalMinutes": 15,
+      "MaxEmailsPerRun": 5,
+      "AgentName": "enterprise support AI agent"
+    },
+    "TicketTriage": {
+      "Enabled": true,
+      "IntervalMinutes": 30,
+      "BatchSize": 10
+    },
+    "StaleTicketEscalation": {
+      "Enabled": true,
+      "IntervalMinutes": 60,
+      "StaleAfterHours": 24
+    }
+  }
+}
+```
+
+> [!NOTE]
+> Gmail integration requires a Google Account **App Password** (16 characters) instead of your regular password.
+
+---
+
+## 💻 Running the Project Locally
+
+### 1. Build and Run the App
+Run the application specifying the port and disabling default launch profiles:
 ```powershell
-cd c:\Users\bisht\knowledge_base
-dotnet run --project SmartKnowledgeDesk\SmartKnowledgeDesk.csproj --no-launch-profile --urls http://127.0.0.1:5300
+cd c:\Users\bisht\knowledge_base\SmartKnowledgeDesk
+dotnet run --no-launch-profile --urls http://127.0.0.1:5300
 ```
 
-Then open:
+### 2. Access the Application
+* **Dashboard / Main Interface:** [http://127.0.0.1:5300](http://127.0.0.1:5300)
+* **Automations View:** [http://127.0.0.1:5300/Automations](http://127.0.0.1:5300/Automations)
 
-```
-http://127.0.0.1:5300
-```
+---
 
-## Notes for GitHub / Vercel
+## 📦 Project Architecture Highlights
 
-- This repository is now initialized locally with a clean `.gitignore` for C# and ASP.NET projects.
-- A GitHub remote has not been configured from this environment because GitHub CLI is not installed and there is no access token.
-- Once you have a GitHub repository URL, add it as a remote and push the code:
+* [Program.cs](file:///c:/Users/bisht/knowledge_base/SmartKnowledgeDesk/Program.cs) — Application startup, service dependency injection, background tasks, and plugin registrations.
+* [AutomationsController.cs](file:///c:/Users/bisht/knowledge_base/SmartKnowledgeDesk/Controllers/AutomationsController.cs) — Processes background execution history and metrics for the web UI.
+* [EmailTicketIngestionService.cs](file:///c:/Users/bisht/knowledge_base/SmartKnowledgeDesk/Services/EmailTicketIngestionService.cs) — Periodically checks email inbox and inserts tickets.
+* [Ticket.cs](file:///c:/Users/bisht/knowledge_base/SmartKnowledgeDesk/Models/Ticket.cs) — Database model for support tickets.
+* [AutomationEvent.cs](file:///c:/Users/bisht/knowledge_base/SmartKnowledgeDesk/Models/AutomationEvent.cs) — Stores individual run event logs in SQL Server.
 
-```powershell
-git remote add origin https://github.com/<your-username>/<repo-name>.git
-git push -u origin main
-```
+---
 
-## Project structure highlights
+## 🌐 GitHub Integration
 
-- `SmartKnowledgeDesk/Program.cs` — app startup and hosted service registration
-- `SmartKnowledgeDesk/Services/EmailTicketIngestionService.cs` — reads Gmail and creates tickets
-- `SmartKnowledgeDesk/Services/TicketTriageAutomationService.cs` — fills missing AI ticket metadata
-- `SmartKnowledgeDesk/Services/StaleTicketEscalationService.cs` — escalates old unresolved tickets
-- `SmartKnowledgeDesk/Controllers/AutomationsController.cs` — builds automation dashboard data
-- `SmartKnowledgeDesk/Views/Automations/Index.cshtml` — displays automation activity and metrics
-- `SmartKnowledgeDesk/Models/Ticket.cs` — contains AI fields and workflow metadata
-
-## Deployment
-
-For Vercel or GitHub integration, push this repo to GitHub first. Then connect the GitHub repo to Vercel for deployment tracking.
+This repository is synced with GitHub:
+* **Remote Repository:** [https://github.com/YashikaBisht1/SmartKnowledgeDesk.git](https://github.com/YashikaBisht1/SmartKnowledgeDesk.git)
+* **Branch:** `main`
